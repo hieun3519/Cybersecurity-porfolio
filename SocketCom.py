@@ -1,6 +1,6 @@
 import socket
 import subprocess
-
+class serverSocket():
 # def getUserInput(input):
 #     # switch case just to be fancy
 #     numInput = int(input)
