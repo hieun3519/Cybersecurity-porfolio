@@ -23,26 +23,23 @@ def connectServer():
         clientSocket.close()
         exit()
 
-    while True:
-        # error handling if user pick anything other than a number
-        try:
+    try:
+        while True:
+            # error handling if user pick anything other than a number
+            data = clientSocket.recv(4096)
+            # error handling
+            if not data:
+                break
+            serverMessage = data.decode()
+            print("Server: ", serverMessage)
             # send userInput
-            userInput = input("Enter a valid number: \n")
-            if not userInput.isdigit():
-                raise ValueError("Invalid input")
-            elif not (1 <= int(userInput) <= 5):
-                raise IndexError("Invalid number")
-            else:
-                clientSocket.send(userInput.encode())
-                getData = clientSocket.recv(1024)
-                # exit out if there is no data
-                if not getData:
-                    break
-                clientSocket.close()
-                exit()
-        except ValueError as v:
-            print(v)
-        except IndexError as i:
-            print(i)
-        print(clientSocket.recv(1024).decode())
+            # need to implement JSON to make this easier
+            userInput = input("Client: Enter a valid number: \n")
+            clientSocket.send(userInput.encode())
+
+    except ConnectionError:
+        print("Client: Connection error")
+    finally:
+        clientSocket.close()
+
 connectServer()
