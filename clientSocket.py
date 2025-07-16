@@ -35,19 +35,31 @@ def connectServer():
             try:
                 serverMessage = json.loads(data.decode())
             except JSONDecodeError:
-                print("Server sent invalid data\n")
+                print("Server ended\n")
                 break
             # print out message and menu declared in socketCom to the user
             if "message" in serverMessage:
-                print("Server: ", serverMessage["message"], "\n")
+                message = serverMessage["message"]
+                print("Server: ", message, "\n")
+                # if message have the line "Saved ping results" and output in serverMessage
+                # dict then print out the open file
+                if "saved ping result" in message.lower() and "output" in serverMessage:
+                    with open("ping_results.txt", "w") as f:
+                        f.write(serverMessage["output"])
+                    print("Client: File is saved as ping_results.txt")
+                # print out the other options
+                elif "output" in serverMessage:
+                    print("Server: ", serverMessage["output"], "\n")
             if "menu" in serverMessage:
-                print("Server: ", serverMessage["menu"], "\n")
-            if "output" in serverMessage:
-                print("Server: ", serverMessage["output"], "\n")
+                print("Server: ")
+                for i in serverMessage["menu"]:
+                    print(i["name"], "\n")
+
             try:
-                userInput = input("Client: Enter another option: \n")
+                userInput = input("Client: Enter your option: \n")
+                # error check if user entering numbers out of bound
                 if not 1 <= int(userInput) <= 4:
-                    print("Please enter the number within the range")
+                    print("Please enter valid input")
                     continue
                 # using json we can formulate a dict to send it back to the server based on user Input
                 if int(userInput) == 2:

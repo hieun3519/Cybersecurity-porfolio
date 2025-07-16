@@ -38,7 +38,7 @@ class serverSocket():
                        "menu": userMenu}
         userMenuJSON = json.dumps(welcomeMenu)
         return client.sendall((userMenuJSON).encode())
-
+    # function output based on user's os since it will give error for invalid ping command lines
     def get_ping_command(self, host):
         if platform.system() == "Windows":
             return ["ping", "-n", "3", "-w", "3000", host]
@@ -84,6 +84,10 @@ while True:
                         ping_cmd = server.get_ping_command("127.0.0.1")
                         sendPack = subprocess.check_output(ping_cmd)
                         output = sendPack.decode()
+                        # create a text file and store the data
+                        with open("ping_results.txt", "w") as f:
+                            f.write("Ping local host: \n")
+                            f.write(output)
                         serverResponse = {
                             "message": "Ping result:",
                             "output": output
@@ -100,26 +104,36 @@ while True:
                 elif userChoice == 2:
                     website = clientMessage.get("website", "")
                     try:
-                        # send 3 packets with 3000 ms delay to local host
                         getPing = server.get_ping_command(website)
                         sendPack = subprocess.check_output(getPing)
+                        output = sendPack.decode()  # decode the serial of the subprocess function
+                        with open("ping_results.txt", "w") as f:
+                            f.write(f"Ping website {website}: \n")
+                            f.write(output)
                         # sending the response in a form of json since the client is expecting to receive
                         # json format
                         serverResponse = {
                             "message": "Ping result: ",
-                            "output": sendPack.decode() # decode the serial of the subprocess function
+                            "output": output
                         }
                         c.sendall(json.dumps(serverResponse).encode())
                     except subprocess.CalledProcessError as e:
-                        # sending error message if ping doesn't work
                         errorMessage = f"Ping failed with an error code {e.returncode}".encode()
                         c.sendall(errorMessage)
                 elif userChoice == 3:
+                    # try to open the text file saved and if empty then send out file error
+                    try:
+                        with open("ping_results.txt", "r") as f:
+                            ping_content = f.read()
+                    except FileNotFoundError:
+                            ping_content = "No previous ping done"
                     serverResponse = {
-                        "message": "Ping result: ",
-                        "output": "Haven't add this feature yet :("  # decode the serial of the subprocess function
+                            "message": "Saved ping results:",
+                            "output": ping_content  # decode the serial of the subprocess function
                     }
                     c.sendall(json.dumps(serverResponse).encode())
+                    # to loop again and that way we get one JSON response
+                    # continue
                 elif userChoice == 4:
                     serverResponse = {
                         "message": "Ping result: ",
